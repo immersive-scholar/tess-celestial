@@ -11,12 +11,15 @@
 /*||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 /*||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 /*||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
+/* (Aspect ratios between 58/21 and 22/7) */
 :root {
   /* body and .main-container properties */
   --body-overflow: hidden;
   --background-color: #000000;
   --text-color: #FFFFFF;
   --link-color: #CC0000;
+  --link-color-hover: #CCCCCC;
+  --button-color-hover: #666666;
   --outermost-padding: 100px;
   --main-container-display: grid;
   --main-container-grid-areas:
@@ -37,6 +40,7 @@
   /* .main-txt properties */
   --main-txt-display: block;
   --main-txt-grid-areas: "";
+  --main-txt-row-spacing: none;
   --main-txt-heading-margin: 75px 0;
   --main-txt-bg-color: rgb(0, 0, 0, 0.8);
   --max-main-line-length: 1090px;
@@ -48,8 +52,9 @@
   --main-desc-padding-left: 0px;
   --main-desc-margin: initial;
   /* .matrix properties */
+  --matrix-padding: 0;
   --matrix-item-side-length: 70%;
-  --matrix-item-max-side-length: 700px;
+  --matrix-item-max-side-length: 25vh;
   --matrix-item-gap: 0px;
   --matrix-col-spacing: 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
   --matrix-row-spacing: 1fr 1fr 1fr;
@@ -57,15 +62,21 @@
   --max-matrix-width: 6000px;
   --matrix-overflow: hidden;
   /* .popup properties - overall */
+  --popup-transform: translateY(-50%) translateX(-50%);
   --popup-flex-flow: row nowrap;
   --popup-width: 65%;
   --popup-height: 71.429vh;
+  --popup-min-height: auto;
   --popup-max-width: 3500px;
   --popup-left-position: calc(var(--left-col-width) / 2);
   --popup-top-position: calc(var(--top-row-height) / 2);
   --popup-bg-color: rgba(0, 0, 0, .8);
   --popup-border: 6px solid rgba(255, 255, 255, 100);
   --popup-border-radius: 25px;
+  --popup-shadow: 0px 0px 15px 5px rgba(0, 0, 0, .25);
+  --popup-button-display: none;
+  --popup-prev-button-transform: translateY(0%) translateX(-100%);
+  --popup-next-button-transform: translateY(0%) translateX(100%);
   /* .popup properties - text */
   --popup-txt-inner-padding: 75px;
   --popup-heading-margin: 75px 0 75px 0;
@@ -91,7 +102,9 @@
   --popup-secondary-img-max-width: 100%;
   --popup-secondary-img-max-height: 20%;
   /* .imm-sch-url-container properties */
+  --imm-sch-cont-position: relative;
   --imm-sch-cont-height: initial;
+  --imm-sch-cont-width: initial;
   --imm-sch-cont-padding-top: 0px;
   --imm-sch-url-bg-color: rgba(0, 0, 0, 0);
   --imm-sch-url-vertical-align: center;
@@ -131,7 +144,13 @@ body {
   grid-template-rows: var(--main-cont-row-heights);
   -webkit-box-pack: center;
       -ms-flex-pack: center;
-          justify-content: center; }
+          justify-content: center;
+  overflow: visible; }
+
+/* Clips the main-container when zoomed in and popup is displayed */
+.main-container.clipped {
+  overflow: hidden;
+  height: auto; }
 
 /* Main (collection) title, researcher name, and project titles */
 h1, h2, h3 {
@@ -152,6 +171,15 @@ a {
 a:visited {
   color: var(--link-color); }
 
+/* Makes links being hovered on a different color */
+a:hover {
+  color: var(--link-color-hover); }
+
+/* Makes alt text conform to style of body text */
+img {
+  font-family: var(--paragraph-font-family);
+  font-size: var(--main-desc-size); }
+
 /**********************************************************************/
 /******************** Main text area ********************/
 /**********************************************************************/
@@ -164,9 +192,12 @@ a:visited {
   margin: var(--horizontal-center-margins);
   grid-area: main-txt;
   background-color: var(--main-txt-bg-color);
-  z-index: 1;
+  z-index: 10;
   display: var(--main-txt-display);
-  grid-template-areas: var(--main-txt-grid-areas); }
+  grid-template-areas: var(--main-txt-grid-areas);
+  grid-template-rows: var(--main-txt-row-spacing);
+  position: relative;
+  overflow: auto; }
 
 /* Title of the researcher's collection of work */
 .main-title {
@@ -206,13 +237,29 @@ a:visited {
       -ms-flex-align: var(--center-position);
           align-items: var(--center-position);
   grid-area: matrix;
-  overflow: var(--matrix-overflow); }
+  overflow: var(--matrix-overflow);
+  position: relative;
+  z-index: 1;
+  padding: var(--matrix-padding); }
 
 /* Individual cell in the matrix */
 .matrix-item {
   width: var(--matrix-item-side-length);
   max-width: var(--matrix-item-max-side-length);
-  justify-self: var(--center-position); }
+  justify-self: var(--center-position);
+  -webkit-transition: 1s;
+  transition: 1s;
+  -webkit-transform: scale(1);
+          transform: scale(1); }
+
+/* Matrix items grow slightly when hovered on */
+.matrix-item:hover {
+  cursor: pointer;
+  z-index: 100;
+  -webkit-transition: 1s;
+  transition: 1s;
+  -webkit-transform: scale(1.25);
+          transform: scale(1.25); }
 
 /**********************************************************************/
 /******************** Popup ********************/
@@ -239,11 +286,14 @@ a:visited {
           align-items: var(--center-position);
   width: var(--popup-width);
   height: var(--popup-height);
+  min-height: var(--popup-min-height);
   max-width: var(--popup-max-width);
+  -webkit-box-shadow: var(--popup-shadow);
+          box-shadow: var(--popup-shadow);
   left: var(--popup-left-position);
   top: var(--popup-top-position);
-  -webkit-transform: translateY(-50%) translateX(-50%);
-          transform: translateY(-50%) translateX(-50%);
+  -webkit-transform: var(--popup-transform);
+          transform: var(--popup-transform);
   pointer-events: none;
   opacity: 0;
   -webkit-transition-property: opacity;
@@ -264,6 +314,53 @@ a:visited {
   -webkit-transition-timing-function: cubic-bezier(0.445, 0.05, 0.55, 0.95);
           transition-timing-function: cubic-bezier(0.445, 0.05, 0.55, 0.95); }
 
+/* Buttons for changing projects in a popup and closing a popup */
+.popup-button {
+  color: var(--text-color);
+  background-color: rgba(0, 0, 0, 0);
+  font-family: var(--paragraph-font-family);
+  font-size: calc(var(--popup-story-size) * 2.5);
+  display: var(--popup-button-display);
+  position: absolute;
+  -webkit-transition: .25s;
+  transition: .25s;
+  -webkit-transform: scale(1);
+          transform: scale(1); }
+
+/* Hover state for popup buttons */
+.popup-button:hover {
+  cursor: pointer;
+  color: var(--button-color-hover);
+  -webkit-transition: .25s;
+  transition: .25s;
+  font-size: calc(var(--popup-story-size) * 2.75); }
+
+/* Button to go to prev project in popup */
+#prev-button {
+  left: 0px;
+  padding: 0px 15px;
+  margin: 0px -15px;
+  -webkit-transform: var(--popup-prev-button-transform);
+          transform: var(--popup-prev-button-transform); }
+
+/* Button to go to next project in popup */
+#next-button {
+  right: 0px;
+  padding: 0px 15px;
+  margin: 0px -15px;
+  -webkit-transform: var(--popup-next-button-transform);
+          transform: var(--popup-next-button-transform); }
+
+/* Button to close popup in interactive display */
+#close-button {
+  border-width: 0;
+  right: 45px;
+  top: 30px;
+  padding: 0px 15px;
+  margin: 0px -15px;
+  -webkit-transform: translateY(-55%) translateX(55%);
+          transform: translateY(-55%) translateX(55%); }
+
 /* Area of matrix popup containing primary image and secondary images */
 .popup-img-area {
   padding: var(--popup-img-inner-padding);
@@ -283,7 +380,10 @@ a:visited {
   -webkit-box-sizing: border-box;
           box-sizing: border-box;
   width: var(--popup-img-area-width);
-  height: var(--popup-img-area-height); }
+  height: var(--popup-img-area-height);
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center; }
 
 /* The main (and largest) image of a matrix item */
 #primary-popup-img {
@@ -318,7 +418,19 @@ a:visited {
   width: var(--popup-secondary-img-width);
   height: var(--popup-secondary-img-height);
   max-width: var(--popup-secondary-img-max-width);
-  max-height: var(--popup-secondary-img-max-height); }
+  max-height: var(--popup-secondary-img-max-height);
+  cursor: pointer;
+  -webkit-transition: .25s;
+  transition: .25s;
+  -webkit-transform: scale(1);
+          transform: scale(1); }
+
+/* Hover state for secondary-img */
+.secondary-img:hover {
+  -webkit-transition: .25s;
+  transition: .25s;
+  -webkit-transform: scale(1.25);
+          transform: scale(1.25); }
 
 /* Area of matrix popup containing item title, story, and URL */
 .popup-txt-area {
@@ -349,11 +461,14 @@ a:visited {
   -ms-flex-item-align: var(--imm-sch-url-vertical-align);
       align-self: var(--imm-sch-url-vertical-align);
   background-color: var(--imm-sch-url-bg-color);
-  z-index: 1;
+  z-index: 10;
   -webkit-box-sizing: border-box;
           box-sizing: border-box;
   height: var(--imm-sch-cont-height);
-  padding-top: var(--imm-sch-cont-padding-top); }
+  width: var(--imm-sch-cont-width);
+  padding-top: var(--imm-sch-cont-padding-top);
+  position: var(--imm-sch-cont-position);
+  margin: 0; }
 
 /* Immersive Scholar logo */
 #logo {
@@ -366,7 +481,8 @@ a:visited {
   padding: var(--imm-sch-url-padding);
   font-size: var(--imm-sch-url-size);
   display: var(--imm-sch-url-display);
-  vertical-align: var(--imm-sch-url-vertical-align-percentage); }
+  vertical-align: var(--imm-sch-url-vertical-align-percentage);
+  margin: 0; }
 
 /*||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 /*||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
@@ -380,9 +496,19 @@ a:visited {
 /*||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 /*||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 /**********************************************************************/
+/******************** For wider landscape layouts ********************/
+/**********************************************************************/
+/* (Aspect ratios 22/7 and wider) */
+@media (min-aspect-ratio: 22 / 7) {
+  :root {
+    --left-col-width: 80vw;
+    --right-col-width: 20vw; } }
+
+/**********************************************************************/
 /******************** For narrower landscape layouts ********************/
 /**********************************************************************/
 /* 5/6 matrix, 1/6 text */
+/* (Aspect ratios between 18/7 and 58/21) */
 @media (max-aspect-ratio: 58 / 21) and (min-height: 2100px) {
   :root {
     /* body and .main-container properties */
@@ -394,6 +520,7 @@ a:visited {
     /* .imm-sch-url-container properties */ } }
 
 /* 4/5 matrix, 1/5 text */
+/* (Aspect ratios between 15/7 and 18/7) */
 @media (max-aspect-ratio: 18 / 7) and (min-height: 2100px) {
   :root {
     /* body and .main-container properties */
@@ -402,9 +529,11 @@ a:visited {
     /* .main-txt properties */
     /* .matrix properties */
     /* .popup properties */
+    --popup-story-size: 42px;
     /* .imm-sch-url-container properties */ } }
 
 /* 3/4 matrix, 1/4 text */
+/* (Aspect ratios between 8/5 and 15/7) */
 @media (max-aspect-ratio: 15 / 7) and (min-height: 2100px) {
   :root {
     /* body and .main-container properties */
@@ -413,6 +542,7 @@ a:visited {
     /* .main-txt properties */
     /* .matrix properties */
     /* .popup properties */
+    --popup-story-size: 36px;
     /* .imm-sch-url-container properties */ } }
 
 /**********************************************************************/
@@ -429,8 +559,8 @@ a:visited {
       "link link";
     --left-col-width: 100vw;
     --right-col-width: 0vw;
-    --top-row-height: 65vh;
-    --middle-row-height: 25vh;
+    --top-row-height: 60vh;
+    --middle-row-height: 30vh;
     --bottom-row-height: 10vh;
     --main-cont-row-heights: var(--top-row-height) var(--middle-row-height) var(--bottom-row-height);
     /* .main-txt properties */
@@ -439,22 +569,24 @@ a:visited {
       "title desc"
       "name desc"
       "url desc";
+    --main-txt-row-spacing: auto auto 1fr;
     --main-txt-heading-margin: 0px 0px 25px 0px;
     --main-title-size: 144px;
     --main-researcher-name-size: 84px;
+    --main-desc-size: 42px;
     --main-txt-padding: 75px calc(.5 * 100vw - 1125px);
     --main-desc-padding-left: 75px;
     --main-desc-margin: 0px;
     /* .matrix properties */
     --matrix-width: 100%;
-    --matrix-item-side-length: 85%;
+    --matrix-item-side-length: 80%;
     /* .popup properties - overall */
     --popup-width: 95%;
-    --popup-height: 60vh;
+    --popup-height: 50vh;
     /* .popup properties - text */
     --popup-heading-margin: 0px;
     --popup-title-size: 108px;
-    --popup-story-size: 42px;
+    --popup-story-size: 30px;
     /* .popup properties - image */
     /* .imm-sch-url-container properties */
     --imm-sch-cont-height: 10vh;
@@ -472,13 +604,13 @@ a:visited {
 @media (max-aspect-ratio: 8 / 7) and (min-height: 2100px) {
   :root {
     /* body and .main-container properties */
-    --top-row-height: 60vh;
-    --middle-row-height: 30vh;
-    --bottom-row-height: 10vh;
     /* .main-txt properties */
     --main-txt-padding: 75px;
+    --main-title-size: 132px;
+    --main-researcher-name-size: 78px;
     /* .matrix properties */
     /* .popup properties */
+    --popup-height: 55vh;
     /* .imm-sch-url-container properties */
     --logo-padding: 0 0 0 75px; } }
 
@@ -490,7 +622,7 @@ a:visited {
     --horizontal-center-margins: 0;
     /* .main-txt properties */
     --max-main-line-length: 800px;
-    --main-title-size: 132px;
+    --main-title-size: 120px;
     --main-researcher-name-size: 72px;
     --main-desc-size: 36px;
     --main-link-size: 24px;
@@ -504,7 +636,6 @@ a:visited {
     --popup-flex-flow: row nowrap;
     --popup-width: 90vw;
     --popup-max-width: 90vw;
-    --popup-height: 40%;
     /* .popup properties - text */
     --popup-txt-inner-padding: 75px;
     --popup-title-size: 84px;
@@ -527,6 +658,7 @@ a:visited {
     --popup-secondary-img-max-width: 100%;
     --popup-secondary-img-max-height: 25%;
     /* .imm-sch-url-container properties */
+    --imm-sch-url-padding: 0 75px 75px 75px;
     --imm-sch-url-vertical-align: center;
     --imm-sch-url-vertical-align-percentage: 40%;
     --imm-sch-url-padding: 0 75px 25px 0.5vw;
@@ -544,8 +676,8 @@ a:visited {
       "matrix matrix"
       "main-txt desc"
       "link link";
-    --top-row-height: 80vh;
-    --middle-row-height: 15vh;
+    --top-row-height: 77.5vh;
+    --middle-row-height: 17.5vh;
     --bottom-row-height: 5vh;
     /* .main-txt properties */
     --main-txt-padding: 50px;
@@ -559,15 +691,22 @@ a:visited {
     --matrix-col-spacing: 1fr 1fr 1fr;
     --matrix-row-spacing: 1fr 1fr 1fr 1fr 1fr 1fr;
     /* .popup properties */
-    --popup-flex-flow: row nowrap;
+    --popup-flex-flow: column nowrap;
+    --popup-height: 70vh;
     /* .popup properties - text */
+    --popup-txt-inner-padding: 0 75px 75px 75px;
+    --popup-txt-area-width: 100%;
+    --popup-txt-area-height: 55%;
     --popup-title-size: 78px;
     --popup-story-size: 30px;
+    /* .popup properties - image */
+    --popup-img-area-width: 100%;
+    --popup-img-area-height: 45%;
     /* .imm-sch-url-container properties */
     --imm-sch-cont-height: 5vh;
     --imm-sch-cont-padding-top: 1.25vh;
     --imm-sch-url-vertical-align-percentage: 55%;
-    --imm-sch-url-padding: 0px;
+    --imm-sch-url-padding: 0 75px 75px 0px;
     --imm-sch-url-size: 12px;
     --logo-padding: 0 0 0 50px;
     --max-logo-height: 50px; } }
@@ -584,8 +723,8 @@ a:visited {
     --left-col-width: 100vw;
     --right-col-width: 0vw;
     --top-row-height: 70vh;
-    --middle-row-height: 25vh;
-    --bottom-row-height: 5vh;
+    --middle-row-height: 22.5vh;
+    --bottom-row-height: 7.5vh;
     /* .main-txt properties */
     --main-txt-display: block;
     --main-txt-grid-areas: "";
@@ -594,16 +733,14 @@ a:visited {
     /* .matrix properties */
     --matrix-item-side-length: 45%;
     /* .popup properties - overall */
-    --popup-flex-flow: column nowrap;
     --popup-width: 90%;
-    --popup-height: 60vh;
+    --popup-height: 65vh;
     --popup-max-width: 1300px;
     --popup-left-position: 50%;
-    --popup-top-position: 32.5%;
+    --popup-top-position: 35%;
     /* .popup properties - text */
-    --popup-txt-inner-padding: 0 75px 75px 75px;
     --popup-heading-margin: 0px;
-    --popup-title-size: 78px;
+    --popup-title-size: 72px;
     --popup-story-size: 30px;
     --popup-txt-area-width: 100%;
     --popup-txt-area-height: 50%;
@@ -612,6 +749,7 @@ a:visited {
     --popup-secondary-img-flex-flow: row nowrap;
     --popup-img-area-width: 100%;
     --popup-img-area-height: 50%;
+    --popup-img-primary-secondary-gap: 5% 0 0 0;
     --popup-primary-img-max-width: 100%;
     --popup-primary-img-max-height: 75%;
     --popup-secondary-img-slides-width: 100%;
@@ -619,7 +757,7 @@ a:visited {
     --popup-secondary-img-max-width: 25%;
     --popup-secondary-img-max-height: 100%;
     /* .imm-sch-url-container properties */
-    --imm-sch-url-padding: 0 75px 75px 75px;
+    --imm-sch-url-padding: 0 75px 75px 50px;
     --imm-sch-url-size: 12px;
     --imm-sch-url-display: block;
     --max-logo-height: 50px; } }
@@ -636,9 +774,10 @@ a:visited {
 /*||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 /*||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 /**********************************************************************/
-/******************** For 4K display (large desktop?) ********************/
+/******************** For large desktops (e.g. 4K display) ********************/
 /**********************************************************************/
-@media (max-width: 2560px) and (max-height: 2099px) {
+/* For any personal device wider than 2560px */
+@media (max-height: 2099px) {
   :root {
     /* body and .main-container properties */
     --left-col-width: 75vw;
@@ -646,14 +785,15 @@ a:visited {
     --top-row-height: 90vh;
     --bottom-row-height: 10vh;
     /* .main-txt properties */
-    --main-txt-heading-margin: 25px 0;
+    --main-txt-bg-color: rgba(0, 0, 0, 0.8);
+    --main-txt-heading-margin: 0 0 25px 0;
     --main-txt-padding: 40px;
-    --main-txt-bg-color: rgb(54, 69, 79, .5);
     --main-title-size: 60px;
     --main-researcher-name-size: 30px;
-    --main-desc-size: 16px;
+    --main-desc-size: 18px;
     --main-link-size: 12px;
     /* .matrix properties */
+    --matrix-item-gap: 25px 0px;
     --matrix-overflow: auto;
     --matrix-col-spacing: 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
     --matrix-row-spacing: 1fr 1fr 1fr;
@@ -663,9 +803,10 @@ a:visited {
     --popup-flex-flow: row nowrap;
     --popup-border: 10px solid rgba(255, 255, 255, 100);
     --popup-border-radius: 10px;
-    --popup-width: 90vw;
-    --popup-max-width: 70vw;
+    --popup-max-width: 65vw;
     --popup-height: 75vh;
+    --popup-border: 4px solid rgba(255, 255, 255, 100);
+    --popup-button-display: block;
     /* .popup properties - text */
     --popup-heading-margin: 0;
     --popup-title-size: 48px;
@@ -676,103 +817,229 @@ a:visited {
     --imm-sch-url-size: 10px;
     --max-logo-height: 40px; } }
 
+/* For a 4K display - between 2560px and 2000px wide */
+@media (max-width: 2560px) and (max-height: 2099px) {
+  :root {
+    /* body and .main-container properties */
+    /* .main-txt properties */
+    /* .matrix properties */
+    /* .popup properties - overall */
+    /* .popup properties - text */
+    --popup-img-inner-padding: 4%;
+    /* .popup properties - image */
+    --popup-txt-inner-padding: 4%;
+    /* .imm-sch-url-container properties */ } }
+
+/* For a smaller desktop - between 2000px and 1440px wide */
+@media (max-width: 2000px) and (max-height: 2099px) {
+  :root {
+    /* body and .main-container properties */
+    /* .main-txt properties */
+    --main-desc-size: 16px;
+    /* .matrix properties */
+    /* .popup properties - overall */
+    --popup-width: 75vw;
+    /* .popup properties - text */
+    --popup-title-size: 42px;
+    --popup-story-size: 16px;
+    /* .popup properties - image */
+    /* .imm-sch-url-container properties */ } }
+
 /**********************************************************************/
 /******************** For large laptop ********************/
 /**********************************************************************/
+/* Between 1440px and 1024px wide */
 @media (max-width: 1440px) and (max-height: 2099px) {
   :root {
     /* body and .main-container properties */
     --left-col-width: 70vw;
     --right-col-width: 30vw;
     /* .main-txt properties */
+    --main-title-size: 52px;
+    --main-researcher-name-size: 24px;
+    --main-desc-size: 14px;
+    --main-link-size: 10px;
     /* .matrix properties */
-    /* .popup properties */
+    /* .popup properties - overall */
+    --popup-width: 60vw;
+    --popup-prev-button-transform: translateY(0%) translateX(-87.5%);
+    --popup-next-button-transform: translateY(0%) translateX(87.5%);
+    /* .popup properties - text */
+    --popup-txt-area-width: 50%;
+    --popup-txt-area-height: 100%;
+    --popup-title-size: 36px;
+    --popup-story-size: 14px;
+    /* .popup properties - image */
+    --popup-img-area-width: 50%;
+    --popup-img-area-height: 100%;
+    --popup-img-primary-secondary-gap: 5% 0 0 0;
+    --popup-primary-img-max-width: 100%;
+    --popup-primary-img-max-height: 75%;
+    --popup-secondary-img-slides-width: 100%;
+    --popup-secondary-img-slides-height: 25%;
+    --popup-secondary-img-max-width: 20%;
+    --popup-secondary-img-max-height: 100%;
+    --popup-img-flex-flow: column nowrap;
+    --popup-secondary-img-flex-flow: row nowrap;
     /* .imm-sch-url-container properties */ } }
 
 /**********************************************************************/
 /******************** For laptop ********************/
 /**********************************************************************/
+/* Between 1024px and 768px wide */
 @media (max-width: 1024px) and (max-height: 2099px) {
   :root {
     /* body and .main-container properties */
+    --main-container-grid-areas:
+      "matrix main-txt";
     --left-col-width: 60vw;
     --right-col-width: 40vw;
+    --top-row-height: 100vh;
+    --bottom-row-height: 0vh;
     /* .main-txt properties */
+    --main-txt-padding: 25px;
+    --main-txt-heading-margin: 15px 0px;
     /* .matrix properties */
+    --matrix-padding: 25px 0px;
     --matrix-col-spacing: 1fr 1fr 1fr;
     --matrix-row-spacing: 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
-    /* .popup properties */
+    /* .popup properties - overall */
+    --popup-flex-flow: column nowrap;
+    --popup-width: 47.5%;
+    --popup-height: 95vh;
+    --popup-prev-button-transform: translateY(0%) translateX(-80%);
+    --popup-next-button-transform: translateY(0%) translateX(80%);
+    /* .popup properties - text */
+    --popup-txt-inner-padding: 0px 25px 25px 25px;
+    --popup-txt-area-width: 100%;
+    --popup-txt-area-height: 50%;
+    /* .popup properties - image */
+    --popup-img-inner-padding: 25px;
+    --popup-img-area-width: 80%;
+    --popup-img-area-height: 50%;
     /* .imm-sch-url-container properties */
-    --imm-sch-url-bg-color: rgb(54, 69, 79, .5); } }
+    --imm-sch-cont-width: 40vw;
+    --imm-sch-cont-position: fixed;
+    --imm-sch-url-bg-color: rgb(0, 0, 0, 0);
+    --max-logo-height: 30px;
+    --logo-padding: 25px 25px 0 25px;
+    --imm-sch-url-padding: 5px 25px 25px 25px;
+    --imm-sch-url-display: block;
+    --logo-display: block; }
+  .imm-sch-url-container {
+    bottom: 0;
+    right: 0; } }
 
 /**********************************************************************/
 /******************** For tablet ********************/
 /**********************************************************************/
+/* Between 768px and 425px wide */
 @media (max-width: 768px) and (max-height: 2099px) {
   :root {
     /* body and .main-container properties */
+    --body-overflow: auto;
     --horizontal-center-margins: 0 auto;
     --main-container-display: block;
+    --left-col-width: 100vw;
     /* .main-txt properties */
-    --main-txt-padding: 15vw;
-    --main-title-size: 7.183vw;
-    --main-researcher-name-size: 4.688vw;
-    --main-desc-size: 2.344vw;
-    --main-link-size: 1.563vw;
+    --main-txt-bg-color: rgb(0, 0, 0, 0);
+    --main-txt-padding: 25px var(--matrix-left-right-gap);
+    --main-title-size: 60px;
+    --main-researcher-name-size: 36px;
+    --main-desc-size: 18px;
+    --main-link-size: 14px;
     /* .matrix properties */
+    --matrix-padding: 0;
+    --matrix-left-right-gap: calc((100vw - 3 * 23.4375vw) / 6);
     --matrix-col-spacing: 1fr 1fr 1fr;
     --matrix-row-spacing: 1fr 1fr 1fr 1fr 1fr 1fr;
-    --matrix-item-gap: 2.5%;
+    --matrix-overflow: visible;
     /* .popup properties */
+    --popup-transform: translateY(0%) translateX(-50%);
     --popup-flex-flow: column nowrap;
     --popup-width: 75%;
-    --popup-height: 71.429vh;
+    --popup-min-height: 90vh;
     --popup-max-width: 75vw;
+    --popup-height: auto;
+    --popup-left-position: 50%;
+    --popup-top-position: 25px;
+    --popup-prev-button-transform: translateY(0%) translateX(-100%);
+    --popup-next-button-transform: translateY(0%) translateX(100%);
     /* .popup properties - text */
-    --popup-txt-inner-padding: 5vw;
+    --popup-title-size: 36px;
+    --popup-story-size: 18px;
     /* .popup properties - image */
-    --popup-img-flex-flow: column nowrap;
-    --popup-secondary-img-flex-flow: row nowrap;
-    --popup-img-inner-padding: 5vw;
+    --popup-img-primary-secondary-gap: 0 0 0 5%;
+    --popup-primary-img-max-width: 75%;
+    --popup-primary-img-max-height: 100%;
+    --popup-secondary-img-slides-width: 20%;
+    --popup-secondary-img-slides-height: 45vw;
+    --popup-secondary-img-max-width: 100%;
+    --popup-secondary-img-max-height: 20%;
+    --popup-img-flex-flow: row nowrap;
+    --popup-secondary-img-flex-flow: column nowrap;
     /* .imm-sch-url-container properties */
-    --main-url-separate-display: none; }
-  .main-txt {
-    position: fixed;
-    z-index: 50; }
-  .matrix {
-    width: 100vw;
-    overflow: auto; } }
+    --imm-sch-cont-width: 100vw;
+    --imm-sch-cont-position: static;
+    --max-logo-height: 45px;
+    --imm-sch-url-size: 12px;
+    --logo-padding: 50px var(--matrix-left-right-gap) 0 var(--matrix-left-right-gap);
+    --imm-sch-url-padding: 5px var(--matrix-left-right-gap) 25px var(--matrix-left-right-gap);
+    --main-url-separate-display: none; } }
 
 /**********************************************************************/
 /******************** For larger mobile device ********************/
 /**********************************************************************/
-@media (max-width: 425px) and (max-height: 2099px) {
+@media (max-width: 600px) and (max-height: 2099px) {
   :root {
     /* body and .main-container properties */
     /* .main-txt properties */
-    --main-desc-size: 2.824vw;
-    --main-link-size: 2.353vw;
     /* .matrix properties */
     /* .popup properties */
-    --popup-height: 50vh;
-    /* .imm-sch-url-container properties */ } }
+    --popup-prev-button-transform: translateY(0%) translateX(-80%);
+    --popup-next-button-transform: translateY(0%) translateX(80%);
+    /* .popup properties - text */
+    --popup-title-size: 30px;
+    --popup-story-size: 16px;
+    /* .popup properties - image */
+    --popup-img-primary-secondary-gap: 5% 0 0 0;
+    --popup-primary-img-max-width: 100%;
+    --popup-primary-img-max-height: 75%;
+    --popup-secondary-img-slides-width: 100%;
+    --popup-secondary-img-slides-height: auto;
+    --popup-secondary-img-max-width: 20%;
+    --popup-secondary-img-max-height: 100%;
+    --popup-img-flex-flow: column nowrap;
+    --popup-secondary-img-flex-flow: row nowrap;
+    /* .imm-sch-url-container properties */
+    --max-logo-height: 35px; } }
 
 /**********************************************************************/
 /******************** For medium mobile device ********************/
 /**********************************************************************/
 @media (max-width: 375px) and (max-height: 2099px) {
-  /* body and .main-container properties */
-  /* .main-txt properties */
-  /* .matrix properties */
-  /* .popup properties */
-  /* .imm-sch-url-container properties */ }
+  :root {
+    /* body and .main-container properties */
+    /* .main-txt properties */
+    --main-title-size: 54px;
+    --main-researcher-name-size: 36px;
+    /* .matrix properties */
+    /* .popup properties */
+    --popup-prev-button-transform: translateY(0%) translateX(-70%);
+    --popup-next-button-transform: translateY(0%) translateX(70%);
+    /* .imm-sch-url-container properties */ } }
 
 /**********************************************************************/
 /******************** For small mobile device ********************/
 /**********************************************************************/
 @media (max-width: 320px) and (max-height: 2099px) {
-  /* body and .main-container properties */
-  /* .main-txt properties */
-  /* .matrix properties */
-  /* .popup properties */
-  /* .imm-sch-url-container properties */ }
+  :root {
+    /* body and .main-container properties */
+    /* .main-txt properties */
+    --main-title-size: 48px;
+    --main-researcher-name-size: 30px;
+    --main-desc-size: 16px;
+    --main-link-size: 14px;
+    /* .matrix properties */
+    /* .popup properties */
+    /* .imm-sch-url-container properties */ } }
