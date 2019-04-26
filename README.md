@@ -8,7 +8,7 @@ Tess-celestial is a web-based visual application built at NCSU Libraries as part
 
 This application was built using Webpack 3 and is optimized to run in the Chrome browser. The layout design has been tested on displays ranging from 27:9 to 6:5 in aspect ratio. It is not currently optimized for personal devices.
 
-Tess-celestial is hosted on GitHub Pages and can be run via the following link: http://go.ncsu.edu/tess-celestial.
+Tess-celestial is hosted on GitHub Pages and can be run via the following link: https://immersive-scholar.github.io/tess-celestial/.
 
 ## Large-scale display specifications and guidelines
 
