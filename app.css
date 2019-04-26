@@ -3,15 +3,13 @@
 /*||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 /*||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 /*||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
-/*|||||||||| Default settings (Immersion Theater - 6816 x 2240) ||||||||||*/
-/*|||||||||| (Lines up with the bevel grid lines in the Theater ||||||||||*/
-/*|||||||||| (Works for any screen with ratios similar to 27:9) ||||||||||*/
+/*|||||||||||||||||||||||||| Default settings ||||||||||||||||||||||||||*/
 /*||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 /*||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 /*||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 /*||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 /*||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
-/* (Aspect ratios between 58/21 and 22/7) */
+/* (Aspect ratios greater than 15/7) */
 :root {
   /* body and .main-container properties */
   --body-overflow: hidden;
@@ -31,13 +29,16 @@
   --paragraph-line-height: 1.3;
   --center-position: center;
   --horizontal-center-margins: 0;
-  --left-col-width: 87.5vw;
-  --right-col-width: 12.5vw;
+  --left-col-width: calc(100vw - 1100px);
+  --right-col-width: 1100px;
   --top-row-height: 85.714vh;
   --middle-row-height: 0vh;
   --bottom-row-height: 14.286vh;
   --main-cont-row-heights: var(--top-row-height) var(--bottom-row-height);
+  --main-cont-clipped-height: auto;
   /* .main-txt properties */
+  --main-txt-height: auto;
+  --main-txt-overflow: hidden;
   --main-txt-display: block;
   --main-txt-grid-areas: "";
   --main-txt-row-spacing: none;
@@ -52,6 +53,7 @@
   --main-desc-padding-left: 0px;
   --main-desc-margin: initial;
   /* .matrix properties */
+  --matrix-height: auto;
   --matrix-padding: 0;
   --matrix-item-side-length: 70%;
   --matrix-item-max-side-length: 25vh;
@@ -105,16 +107,18 @@
   --imm-sch-cont-position: relative;
   --imm-sch-cont-height: initial;
   --imm-sch-cont-width: initial;
-  --imm-sch-cont-padding-top: 0px;
+  --imm-sch-cont-padding: 0 0 0 75px;
   --imm-sch-url-bg-color: rgba(0, 0, 0, 0);
   --imm-sch-url-vertical-align: center;
   --imm-sch-url-vertical-align-percentage: 62.5%;
-  --imm-sch-url-padding: 0 0 0 0.5vw;
   --imm-sch-url-size: 24px;
   --imm-sch-url-display: inline;
   --logo-display: inline-block;
-  --max-logo-height: 110px;
-  --logo-padding: 0 0 0 2.083vw; }
+  --max-logo-height: 110px; }
+
+/* The root element */
+html {
+  scroll-behavior: smooth; }
 
 /* Element containing .main-container */
 body {
@@ -138,6 +142,7 @@ body {
   width: 100vw;
   -webkit-box-sizing: border-box;
           box-sizing: border-box;
+  overflow: visible;
   display: var(--main-container-display);
   grid-template-areas: var(--main-container-grid-areas);
   grid-template-columns: var(--left-col-width) var(--right-col-width);
@@ -145,12 +150,15 @@ body {
   -webkit-box-pack: center;
       -ms-flex-pack: center;
           justify-content: center;
-  overflow: visible; }
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+      -ms-flex-flow: column nowrap;
+          flex-flow: column nowrap; }
 
 /* Clips the main-container when zoomed in and popup is displayed */
 .main-container.clipped {
   overflow: hidden;
-  height: auto; }
+  height: var(--main-cont-clipped-height); }
 
 /* Main (collection) title, researcher name, and project titles */
 h1, h2, h3 {
@@ -188,6 +196,7 @@ img {
  * description, and Immersive Scholar logo
  */
 .main-txt {
+  height: var(--main-txt-height);
   padding: var(--main-txt-padding);
   margin: var(--horizontal-center-margins);
   grid-area: main-txt;
@@ -197,7 +206,10 @@ img {
   grid-template-areas: var(--main-txt-grid-areas);
   grid-template-rows: var(--main-txt-row-spacing);
   position: relative;
-  overflow: auto; }
+  overflow: var(--main-txt-overflow);
+  -webkit-box-ordinal-group: 3;
+      -ms-flex-order: 2;
+          order: 2; }
 
 /* Title of the researcher's collection of work */
 .main-title {
@@ -230,17 +242,24 @@ img {
 /* Container for all the matrix items */
 .matrix {
   width: var(--left-col-width);
+  height: var(--matrix-height);
   display: grid;
+  overflow: var(--matrix-overflow);
+  position: relative;
+  z-index: 1;
+  padding: var(--matrix-padding);
   grid-template-columns: var(--matrix-col-spacing);
   grid-gap: var(--matrix-item-gap);
   -webkit-box-align: var(--center-position);
       -ms-flex-align: var(--center-position);
           align-items: var(--center-position);
   grid-area: matrix;
-  overflow: var(--matrix-overflow);
-  position: relative;
-  z-index: 1;
-  padding: var(--matrix-padding); }
+  -webkit-box-ordinal-group: 2;
+      -ms-flex-order: 1;
+          order: 1;
+  -webkit-box-flex: 1;
+      -ms-flex: 1;
+          flex: 1; }
 
 /* Individual cell in the matrix */
 .matrix-item {
@@ -264,6 +283,36 @@ img {
 /**********************************************************************/
 /******************** Popup ********************/
 /**********************************************************************/
+/* Wrapper div that enables popup scrolling on a fixed BG */
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  width: 100vw;
+  height: 100vh;
+  visibility: hidden;
+  pointer-events: none;
+  -webkit-transition-property: visibility;
+  transition-property: visibility;
+  -webkit-transition-duration: 0.6s;
+          transition-duration: 0.6s;
+  -webkit-transition-timing-function: cubic-bezier(0.445, 0.05, 0.55, 0.95);
+          transition-timing-function: cubic-bezier(0.445, 0.05, 0.55, 0.95); }
+
+/* Class to make overlay visible only in popup mode */
+.overlay.visible {
+  visibility: visible;
+  z-index: 100;
+  pointer-events: auto;
+  -webkit-transition-property: visibility;
+  transition-property: visibility;
+  -webkit-transition-duration: 0.6s;
+          transition-duration: 0.6s;
+  -webkit-transition-timing-function: cubic-bezier(0.445, 0.05, 0.55, 0.95);
+          transition-timing-function: cubic-bezier(0.445, 0.05, 0.55, 0.95); }
+
 /* Container for matrix item title, story, images, and URL */
 .matrix-popup {
   z-index: 100;
@@ -301,7 +350,8 @@ img {
   -webkit-transition-duration: 0.6s;
           transition-duration: 0.6s;
   -webkit-transition-timing-function: cubic-bezier(0.445, 0.05, 0.55, 0.95);
-          transition-timing-function: cubic-bezier(0.445, 0.05, 0.55, 0.95); }
+          transition-timing-function: cubic-bezier(0.445, 0.05, 0.55, 0.95);
+  margin-bottom: 25px; }
 
 /* Class to fade matrix-popup in/out */
 .matrix-popup.visible {
@@ -466,19 +516,21 @@ img {
           box-sizing: border-box;
   height: var(--imm-sch-cont-height);
   width: var(--imm-sch-cont-width);
-  padding-top: var(--imm-sch-cont-padding-top);
+  padding: var(--imm-sch-cont-padding);
   position: var(--imm-sch-cont-position);
-  margin: 0; }
+  margin: 0;
+  -webkit-box-ordinal-group: 4;
+      -ms-flex-order: 3;
+          order: 3; }
 
 /* Immersive Scholar logo */
 #logo {
   max-height: var(--max-logo-height);
   display: var(--logo-display);
-  padding: var(--logo-padding); }
+  margin-right: 15px; }
 
 /* URL for the Immersive Scholar project that appears outside of .main-txt */
 .imm-sch-url {
-  padding: var(--imm-sch-url-padding);
   font-size: var(--imm-sch-url-size);
   display: var(--imm-sch-url-display);
   vertical-align: var(--imm-sch-url-vertical-align-percentage);
@@ -496,54 +548,20 @@ img {
 /*||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 /*||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
 /**********************************************************************/
-/******************** For wider landscape layouts ********************/
-/**********************************************************************/
-/* (Aspect ratios 22/7 and wider) */
-@media (min-aspect-ratio: 22 / 7) {
-  :root {
-    --left-col-width: 80vw;
-    --right-col-width: 20vw; } }
-
-/**********************************************************************/
 /******************** For narrower landscape layouts ********************/
 /**********************************************************************/
-/* 5/6 matrix, 1/6 text */
-/* (Aspect ratios between 18/7 and 58/21) */
-@media (max-aspect-ratio: 58 / 21) and (min-height: 2100px) {
-  :root {
-    /* body and .main-container properties */
-    --left-col-width: 83.333vw;
-    --right-col-width: 16.667vw;
-    /* .main-txt properties */
-    /* .matrix properties */
-    /* .popup properties */
-    /* .imm-sch-url-container properties */ } }
-
-/* 4/5 matrix, 1/5 text */
 /* (Aspect ratios between 15/7 and 18/7) */
 @media (max-aspect-ratio: 18 / 7) and (min-height: 2100px) {
   :root {
-    /* body and .main-container properties */
-    --left-col-width: 80vw;
-    --right-col-width: 20vw;
-    /* .main-txt properties */
-    /* .matrix properties */
     /* .popup properties */
-    --popup-story-size: 42px;
-    /* .imm-sch-url-container properties */ } }
+    --popup-title-size: 114px;
+    --popup-story-size: 42px; } }
 
-/* 3/4 matrix, 1/4 text */
 /* (Aspect ratios between 8/5 and 15/7) */
 @media (max-aspect-ratio: 15 / 7) and (min-height: 2100px) {
   :root {
-    /* body and .main-container properties */
-    --left-col-width: 75vw;
-    --right-col-width: 25vw;
-    /* .main-txt properties */
-    /* .matrix properties */
     /* .popup properties */
-    --popup-story-size: 36px;
-    /* .imm-sch-url-container properties */ } }
+    --popup-story-size: 36px; } }
 
 /**********************************************************************/
 /******************** For other large-scale displays (square/portrait) ********************/
@@ -553,16 +571,13 @@ img {
 @media (max-aspect-ratio: 8 / 5) and (min-height: 2100px) {
   :root {
     /* body and .main-container properties */
-    --main-container-grid-areas:
-      "matrix matrix"
-      "main-txt main-txt"
-      "link link";
+    --main-container-display: flex;
     --left-col-width: 100vw;
     --right-col-width: 0vw;
     --top-row-height: 60vh;
     --middle-row-height: 30vh;
     --bottom-row-height: 10vh;
-    --main-cont-row-heights: var(--top-row-height) var(--middle-row-height) var(--bottom-row-height);
+    --main-cont-clipped-height: 100vh;
     /* .main-txt properties */
     --main-txt-display: grid;
     --main-txt-grid-areas:
@@ -574,45 +589,32 @@ img {
     --main-title-size: 144px;
     --main-researcher-name-size: 84px;
     --main-desc-size: 42px;
-    --main-txt-padding: 75px calc(.5 * 100vw - 1125px);
+    --main-txt-padding: 75px calc(75px + (50vw - 1050px));
     --main-desc-padding-left: 75px;
     --main-desc-margin: 0px;
     /* .matrix properties */
     --matrix-width: 100%;
     --matrix-item-side-length: 80%;
     /* .popup properties - overall */
-    --popup-width: 95%;
+    --popup-width: 92.813vw;
+    --popup-max-width: 2500px;
     --popup-height: 50vh;
     /* .popup properties - text */
+    --popup-txt-area-width: 50%;
     --popup-heading-margin: 0px;
-    --popup-title-size: 108px;
+    --popup-title-size: 96px;
     --popup-story-size: 30px;
     /* .popup properties - image */
+    --popup-img-area-width: 50%;
     /* .imm-sch-url-container properties */
-    --imm-sch-cont-height: 10vh;
-    --imm-sch-cont-padding-top: 2.5vh;
+    --imm-sch-cont-width: 100%;
+    --imm-sch-cont-height: auto;
+    --imm-sch-cont-padding: 0px calc(75px + (50vw - 1050px)) 75px;
     --imm-sch-url-vertical-align-percentage: 55%;
     --imm-sch-url-size: 24px;
     --imm-sch-url-bg-color: rgba(0, 0, 0, .8);
-    --imm-sch-url-padding: 0 75px 75px 25px;
     --imm-sch-url-display: inline;
-    --logo-display: inline;
-    --logo-padding: 0 0 0 calc(.5 * 100vw - 1125px); } }
-
-/* For a wider "portrait" layout */
-/* (Aspect ratios between 8/5 and 8/7) */
-@media (max-aspect-ratio: 8 / 7) and (min-height: 2100px) {
-  :root {
-    /* body and .main-container properties */
-    /* .main-txt properties */
-    --main-txt-padding: 75px;
-    --main-title-size: 132px;
-    --main-researcher-name-size: 78px;
-    /* .matrix properties */
-    /* .popup properties */
-    --popup-height: 55vh;
-    /* .imm-sch-url-container properties */
-    --logo-padding: 0 0 0 75px; } }
+    --logo-display: inline; } }
 
 /* For a wider "portrait" layout */
 /* (Aspect ratios between 5/7 and 1/1) */
@@ -627,7 +629,7 @@ img {
     --main-desc-size: 36px;
     --main-link-size: 24px;
     /* .matrix properties */
-    --main-txt-padding: 75px;
+    --main-txt-padding: 50px calc(50px + (50vw - 750px));
     --matrix-col-spacing: 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
     --matrix-row-spacing: 1fr 1fr 1fr;
     --matrix-width: 100%;
@@ -637,31 +639,30 @@ img {
     --popup-width: 90vw;
     --popup-max-width: 90vw;
     /* .popup properties - text */
-    --popup-txt-inner-padding: 75px;
+    --popup-txt-inner-padding: 50px;
     --popup-title-size: 84px;
     --popup-story-size: 24px;
-    --popup-txt-area-width: 40%;
     --popup-txt-area-height: 100%;
     /* .popup properties - image */
-    --popup-img-flex-flow: row-reverse nowrap;
-    --popup-secondary-img-flex-flow: column nowrap;
-    --popup-img-area-width: 60%;
+    --popup-img-inner-padding: 50px;
+    --popup-img-flex-flow: column nowrap;
+    --popup-secondary-img-flex-flow: row nowrap;
     --popup-img-area-height: 100%;
     --popup-primary-img-width: auto;
     --popup-primary-img-height: auto;
-    --popup-primary-img-max-width: 75%;
-    --popup-primary-img-max-height: 100%;
-    --popup-secondary-img-slides-width: 25%;
-    --popup-secondary-img-slides-height: 100%;
+    --popup-primary-img-max-width: 100%;
+    --popup-primary-img-max-height: 75%;
+    --popup-img-primary-secondary-gap: 5% 0 0 0;
+    --popup-secondary-img-slides-width: 100%;
+    --popup-secondary-img-slides-height: 25%;
     --popup-secondary-img-width: auto;
     --popup-secondary-img-height: auto;
-    --popup-secondary-img-max-width: 100%;
-    --popup-secondary-img-max-height: 25%;
+    --popup-secondary-img-max-width: 20%;
+    --popup-secondary-img-max-height: 100%;
     /* .imm-sch-url-container properties */
-    --imm-sch-url-padding: 0 75px 75px 75px;
+    --imm-sch-cont-padding: 0 calc(50px + (50vw - 750px)) 50px;
     --imm-sch-url-vertical-align: center;
     --imm-sch-url-vertical-align-percentage: 40%;
-    --imm-sch-url-padding: 0 75px 25px 0.5vw;
     --imm-sch-url-display: inline-table;
     --logo-display: inline-block;
     --max-logo-height: 80px; } }
@@ -680,35 +681,34 @@ img {
     --middle-row-height: 17.5vh;
     --bottom-row-height: 5vh;
     /* .main-txt properties */
-    --main-txt-padding: 50px;
+    --main-txt-padding: 50px calc(50px + (50vw - 550px));
     --main-txt-heading-margin: 0px 0px 15px 0px;
     --main-title-size: 84px;
     --main-researcher-name-size: 48px;
     --main-desc-size: 24px;
     --main-link-size: 12px;
     /* .matrix properties */
-    --matrix-item-side-length: 45%;
+    --matrix-item-side-length: 40%;
     --matrix-col-spacing: 1fr 1fr 1fr;
     --matrix-row-spacing: 1fr 1fr 1fr 1fr 1fr 1fr;
     /* .popup properties */
     --popup-flex-flow: column nowrap;
-    --popup-height: 70vh;
+    --popup-width: 750px;
+    --popup-height: 67.5vh;
     /* .popup properties - text */
-    --popup-txt-inner-padding: 0 75px 75px 75px;
+    --popup-txt-inner-padding: 0 50px 50px 50px;
     --popup-txt-area-width: 100%;
-    --popup-txt-area-height: 55%;
-    --popup-title-size: 78px;
-    --popup-story-size: 30px;
+    --popup-txt-area-height: 50%;
+    --popup-title-size: 60px;
+    --popup-story-size: 24px;
     /* .popup properties - image */
     --popup-img-area-width: 100%;
-    --popup-img-area-height: 45%;
+    --popup-img-area-height: 50%;
     /* .imm-sch-url-container properties */
+    --imm-sch-cont-padding: 0 calc(50px + (50vw - 550px)) 50px;
     --imm-sch-cont-height: 5vh;
-    --imm-sch-cont-padding-top: 1.25vh;
     --imm-sch-url-vertical-align-percentage: 55%;
-    --imm-sch-url-padding: 0 75px 75px 0px;
     --imm-sch-url-size: 12px;
-    --logo-padding: 0 0 0 50px;
     --max-logo-height: 50px; } }
 
 /* The narrowest "portrait" layouts */
@@ -726,6 +726,7 @@ img {
     --middle-row-height: 22.5vh;
     --bottom-row-height: 7.5vh;
     /* .main-txt properties */
+    --main-txt-padding: 25px calc(25px + (50vw - 300px));
     --main-txt-display: block;
     --main-txt-grid-areas: "";
     --main-txt-heading-margin: 0px 0px 25px 0px;
@@ -733,31 +734,31 @@ img {
     /* .matrix properties */
     --matrix-item-side-length: 45%;
     /* .popup properties - overall */
-    --popup-width: 90%;
+    --popup-width: 91.667vw;
     --popup-height: 65vh;
-    --popup-max-width: 1300px;
+    --popup-max-width: 750px;
     --popup-left-position: 50%;
     --popup-top-position: 35%;
     /* .popup properties - text */
     --popup-heading-margin: 0px;
-    --popup-title-size: 72px;
-    --popup-story-size: 30px;
+    --popup-title-size: 54px;
+    --popup-story-size: 24px;
     --popup-txt-area-width: 100%;
-    --popup-txt-area-height: 50%;
+    --popup-txt-area-height: 60%;
     /* .popup properties - image */
     --popup-img-flex-flow: column nowrap;
     --popup-secondary-img-flex-flow: row nowrap;
     --popup-img-area-width: 100%;
-    --popup-img-area-height: 50%;
+    --popup-img-area-height: 40%;
     --popup-img-primary-secondary-gap: 5% 0 0 0;
     --popup-primary-img-max-width: 100%;
     --popup-primary-img-max-height: 75%;
     --popup-secondary-img-slides-width: 100%;
     --popup-secondary-img-slides-height: 25%;
-    --popup-secondary-img-max-width: 25%;
+    --popup-secondary-img-max-width: 20%;
     --popup-secondary-img-max-height: 100%;
     /* .imm-sch-url-container properties */
-    --imm-sch-url-padding: 0 75px 75px 50px;
+    --imm-sch-cont-padding: 0 calc(25px + (50vw - 300px)) 25px;
     --imm-sch-url-size: 12px;
     --imm-sch-url-display: block;
     --max-logo-height: 50px; } }
@@ -785,6 +786,7 @@ img {
     --top-row-height: 90vh;
     --bottom-row-height: 10vh;
     /* .main-txt properties */
+    --main-txt-overflow: auto;
     --main-txt-bg-color: rgba(0, 0, 0, 0.8);
     --main-txt-heading-margin: 0 0 25px 0;
     --main-txt-padding: 40px;
@@ -812,10 +814,12 @@ img {
     --popup-title-size: 48px;
     --popup-story-size: 18px;
     /* .imm-sch-url-container properties */
+    --imm-sch-cont-padding: 0 0 0 40px;
     --imm-sch-url-vertical-align-percentage: 52.5%;
-    --imm-sch-url-padding: 0vw;
     --imm-sch-url-size: 10px;
-    --max-logo-height: 40px; } }
+    --max-logo-height: 40px; }
+  #logo {
+    margin-right: 10px; } }
 
 /* For a 4K display - between 2560px and 2000px wide */
 @media (max-width: 2560px) and (max-height: 2099px) {
@@ -918,12 +922,11 @@ img {
     --popup-img-area-width: 80%;
     --popup-img-area-height: 50%;
     /* .imm-sch-url-container properties */
+    --imm-sch-cont-padding: var(--main-txt-padding);
     --imm-sch-cont-width: 40vw;
     --imm-sch-cont-position: fixed;
     --imm-sch-url-bg-color: rgb(0, 0, 0, 0);
     --max-logo-height: 30px;
-    --logo-padding: 25px 25px 0 25px;
-    --imm-sch-url-padding: 5px 25px 25px 25px;
     --imm-sch-url-display: block;
     --logo-display: block; }
   .imm-sch-url-container {
@@ -983,8 +986,6 @@ img {
     --imm-sch-cont-position: static;
     --max-logo-height: 45px;
     --imm-sch-url-size: 12px;
-    --logo-padding: 50px var(--matrix-left-right-gap) 0 var(--matrix-left-right-gap);
-    --imm-sch-url-padding: 5px var(--matrix-left-right-gap) 25px var(--matrix-left-right-gap);
     --main-url-separate-display: none; } }
 
 /**********************************************************************/
@@ -1043,3 +1044,167 @@ img {
     /* .matrix properties */
     /* .popup properties */
     /* .imm-sch-url-container properties */ } }
+
+/*||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
+/*||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
+/*||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
+/*||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
+/*||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
+/*|||||||||||||||||||||||||||  Special cases |||||||||||||||||||||||||||*/
+/*||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
+/*||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
+/*||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
+/*||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
+/*||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||*/
+/*
+ * These media queries align the content to the different tile gridlines
+ * found in the Hunt Library video walls.
+ */
+/*
+ * Art Wall (5760 x 2304):
+ * - main-txt is 3 tiles wide (wider than usual)
+ * - matrix is 12 tiles wide and 7 tiles tall (narrower and taller than usual)
+ * - popup is is 8 tiles wide (narrower than usual) and 5 tiles tall (shorter
+ *   than usual)
+ * - imm-sch-url-container is 1 tile tall (shorter than usual)
+ */
+@media (width: 5760px) and (height: 2304px) {
+  :root {
+    --left-col-width: 80vw;
+    --right-col-width: 20vw;
+    --top-row-height: 87.5vh;
+    --bottom-row-height: 12.5vh;
+    --popup-width: 53.333vw;
+    --popup-height: 62.5vh; } }
+
+/*
+ * Commons Wall (2880 x 2400):
+ * - main-txt is 2 tiles high (shorter than usual)
+ * --- contents are 7 tiles wide (wider than usual)
+ * - matrix is 7 tiles high (taller than usual)
+ * - popup is 7 tiles wide (narrower than usual)
+ * --- font-size of popup-story is 36px instead of 30px due to the
+ *     greater reading distance
+ * - imm-sch-url-container is 1 tile high (shorter than usual)
+ * --- contents are 7 tiles wide (wider than usual)
+ */
+@media (width: 2880px) and (height: 2400px) {
+  :root {
+    --main-container-display: grid;
+    --main-container-grid-areas:
+      "matrix"
+      "main-txt"
+      "link";
+    --top-row-height: 70vh;
+    --middle-row-height: 20vh;
+    --bottom-row-height: 10vh;
+    --main-cont-row-heights: var(--top-row-height) var(--middle-row-height) var(--bottom-row-height);
+    --main-txt-height: calc(20vh - 50px);
+    --main-txt-padding: 50px 11.111vw 0;
+    --matrix-height: 70vh;
+    --popup-max-width: 77.778vw;
+    --popup-story-size: 36px;
+    --imm-sch-cont-height: 10vh;
+    --imm-sch-cont-padding: 50px 319.997px; } }
+
+/*
+ * iPearl Immersion Theater (6816 x 2240):
+ * - main-txt is 2 tiles wide (narrower than usual)
+ * - matrix is 14 tiles wide (wider than usual)
+ * - popup is 8 tiles wide (narrower than usual)
+ */
+@media (width: 6816px) and (height: 2240px) {
+  :root {
+    --left-col-width: 87.5vw;
+    --right-col-width: 12.5vw;
+    --popup-width: 50vw; } }
+
+/*
+ * Visualization Wall (3840 x 1518):
+ * - Needs to adhere to the "picket fence" layout.
+ * - Also includes two "pattern" columns in the popup that contain a closeup
+ *   of the tessellation being viewed.
+ */
+@media (width: 3840px) and (height: 1518px) {
+  :root {
+    /* body and .main-container properties */
+    --main-container-display: block;
+    --left-col-width: 100vw;
+    /* .main-txt properties */
+    --main-txt-height: 100vh;
+    --main-txt-padding: 445px 32px 0 32px;
+    --main-title-size: 58px;
+    --main-researcher-name-size: 36px;
+    --main-link-size: 12px;
+    /* .matrix properties */
+    --matrix-height: 100vh;
+    --matrix-item-max-side-length: 400px;
+    /* .popup properties - overall */
+    --popup-width: 2021.5px;
+    --popup-transform: translateY(0%) translateX(50%);
+    --popup-border-radius: 0px;
+    --popup-button-display: none;
+    /* .popup properties - text */
+    --popup-txt-inner-padding: 0px;
+    --popup-title-size: 42px;
+    --popup-txt-area-width: calc(406px - 64px);
+    --popup-txt-area-height: auto;
+    /* .popup properties - image */
+    --popup-img-area-width: 800px;
+    --popup-img-area-height: 1062.5px;
+    --popup-img-inner-padding: 0px;
+    --popup-primary-img-width: 350px;
+    --popup-img-primary-secondary-gap: 0px 32px;
+    --popup-secondary-img-max-height: 152.3px;
+    --popup-secondary-img-slides-height: 1062.5px;
+    /* .imm-sch-url-container properties */
+    --imm-sch-cont-padding: 32px;
+    --imm-sch-url-size: 12px;
+    --imm-sch-url-display: block; }
+  .main-txt, .imm-sch-url-container {
+    position: absolute;
+    left: 610.84px;
+    width: 406px;
+    -webkit-box-sizing: border-box;
+            box-sizing: border-box; }
+  .overlay {
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-align: center;
+        -ms-flex-align: center;
+            align-items: center; }
+  .matrix-popup {
+    height: 80vh;
+    position: static;
+    margin-bottom: 0;
+    border-width: 6px 0px 6px 0px;
+    margin-left: 197px;
+    padding: 32px;
+    -webkit-box-sizing: border-box;
+            box-sizing: border-box;
+    display: block; }
+  .popup-txt-area {
+    position: absolute;
+    left: calc(610px + 32px);
+    top: 410px; }
+  .secondary-img-slides {
+    position: absolute;
+    left: 569px;
+    top: 0; }
+  .popup-img-area {
+    position: absolute;
+    left: calc(610px + 32px);
+    display: block; }
+  .pattern {
+    width: 203px;
+    height: calc(100% - 64px);
+    position: absolute;
+    background-position: center;
+    background-size: 1200px; }
+  #pattern-1 {
+    left: 0; }
+  #pattern-2 {
+    right: 0; }
+  .imm-sch-url-container {
+    bottom: 500px; } }
